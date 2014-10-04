@@ -41,7 +41,7 @@
                 </li>
             <?php endforeach; ?>
         </ol>
-        <?=$app['twig']->render('pagination.twig', array('pages' => $pages, 'search' => $search, 'current' => $pagination->currentPage()))?>
+        <?=$app['twig']->render('pagination.twig', array('pages' => $pages, 'search' => $indexer, 'current' => $pagination->currentPage()))?>
     <?php else: ?>
         <div class="well well-small">
             <h4>Nothing found.</h4>

@@ -2,7 +2,6 @@
 use Kilte\Silex\Pagination\PaginationServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/config.php';
 
 $app = new Silex\Application();
@@ -13,7 +12,7 @@ $app->register(new Silex\Provider\UrlGeneratorServiceProvider())
 $app['debug'] = true;
 
 $app['db'] = $app->share(function () {
-    return new PDO(HOMER_DNS, 'homer', '123', [
+    return new PDO(DB_SCHEME.'dbname='.HOMER_DB.';host=localhost', HOMER_DBUSER, HOMER_DBPASS, [
         1002 => "SET NAMES utf8",
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
@@ -39,15 +38,21 @@ $app->get('/', function () use ($app) {
 
     $result = $searcher->search($search, $pagination->offset(), $pagination->limit());
 
-    $wrapLength = 100;
+    $highlighter = function($body, $word) {
+        $wrapLength = 100;
+        $pos = mb_strpos(mb_strtolower($body), mb_strtolower($word));
+        $len = mb_strlen($word);
+        $body = '...'.mb_substr($body, $pos - $wrapLength, 2*$wrapLength+$len).'...';
+        return preg_replace('~('.$word.')~uis', '<b>$1</b>', $body);
+    };
+
+    $words = explode(' ', $search);
+
     foreach ($result as &$row) {
         $descr = '';
-        foreach (explode(' ', $search) as $word) {
-            $body = $row['body'];
-            $pos = mb_strpos($body, $word);
-            $len = mb_strlen($word);
-            $body = '...'.mb_substr($body, $pos - $wrapLength, 2*$wrapLength+$len).'...';
-            $descr .= preg_replace('~('.$word.')~uis', '<b>$1</b>', $body);
+
+        foreach ($words as $word) {
+            $descr .= $highlighter($row['body'], $word);
         }
         $row['body'] = $descr;
     }

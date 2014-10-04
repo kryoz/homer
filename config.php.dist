@@ -1,5 +1,9 @@
 <?php
-define('HOMER_DNS', 'sqlite:' . __DIR__ . '/open/homer.db');
+use Homer\BaseException;
+
+define('HOMER_DNS', 'pgsql:dbname=homer;host=localhost');
+define('HOMER_DBUSER', 'homer');
+define('HOMER_DBPASS', '123');
 define('HOMER_RESOLVER_ADDRESS', '8.8.8.8');
 define('HOMER_TIMER', 0.1);
 define('HOMER_DEEP', 3);
@@ -8,3 +12,31 @@ define('HOMER_LIMITER_TIME', 60 * 60);
 define('HOMER_STAT', true);
 define('HOMER_HTTP_HOST', 'localhost');
 define('HOMER_HTTP_PORT', 1337);
+
+define('ROOT', __DIR__);
+
+$DS = DIRECTORY_SEPARATOR;
+
+if (!isset($loader)) {
+    $loader = require_once ROOT . $DS . 'vendor' . $DS . 'autoload.php';
+}
+
+if (isset($setupErrorHandler)) {
+    set_error_handler(
+        function ($code, $string, $errfile, $errline) {
+            throw new BaseException($string, $code);
+        }
+        , E_ALL | E_STRICT
+    );
+}
+
+error_reporting(E_ALL | E_STRICT);
+
+date_default_timezone_set('Europe/Moscow');
+
+setlocale(LC_CTYPE, "en_US.UTF8");
+setlocale(LC_TIME, "en_US.UTF8");
+
+$defaultEncoding = 'UTF-8';
+mb_internal_encoding($defaultEncoding);
+mb_regex_encoding($defaultEncoding);

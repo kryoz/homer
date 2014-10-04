@@ -2,11 +2,11 @@
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/config.php';
 
-$db = new PDO(HOMER_DNS, 'homer', '123', [
+$db = new PDO(DB_SCHEME.'dbname='.HOMER_DB.';host=localhost', HOMER_DBUSER, HOMER_DBPASS, [
     1002 => "SET NAMES utf8",
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
-$db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
 
 try {
 

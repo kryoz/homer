@@ -7,7 +7,6 @@
 
 namespace Homer;
 
-use Symfony\Component\DomCrawler\Crawler;
 
 class Search
 {
@@ -19,26 +18,6 @@ class Search
     public function __construct(\PDO $db)
     {
         $this->db = $db;
-    }
-
-    public function index($url, Crawler $html)
-    {
-        $title = $html->filter('title');
-        if (!count($title)) {
-            return;
-        }
-
-        $title = $title->text();
-
-        $body = $html->filter('body');
-        $body = count($body) ? $body->text() : '';
-        $body = strip_tags($body);
-        if (!$body) {
-            return;
-        }
-
-        $query = $this->db->prepare('INSERT INTO indexes (url, title, body) VALUES (?, ?, ?)');
-        $query->execute([$url, $title, $body]);
     }
 
     public function search($text, $start, $limit)

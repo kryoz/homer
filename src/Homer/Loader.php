@@ -38,7 +38,7 @@ class Loader
     /**
      * @var Search
      */
-    private $search;
+    private $indexer;
 
     /**
      * @var Request
@@ -55,11 +55,11 @@ class Loader
      */
     private $done = false;
 
-    public function __construct(Client $client, Queue $queue, Search $search)
+    public function __construct(Client $client, Queue $queue, Indexer $indexer)
     {
         $this->client = $client;
         $this->queue = $queue;
-        $this->search = $search;
+        $this->indexer = $indexer;
     }
 
     public function load($url, $deep)
@@ -77,7 +77,9 @@ class Loader
         $this->url = $url;
         $this->deep = $deep;
 
-        $this->request = $this->client->request('GET', $url);
+        $this->request = $this->client->request('GET', $url,
+            ['User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']
+        );
         $this->request->on('response', [$this, 'onResponse']);
         $this->request->end();
 
@@ -106,7 +108,7 @@ class Loader
         $html = new Crawler();
         $html->addHtmlContent($body);
 
-        $this->search->index($this->url, $html);
+        $this->indexer->index($this->url, $html);
 
         if ($this->deep > 0) {
             $base = parse_url($this->url);
