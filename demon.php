@@ -19,7 +19,7 @@ $queue = new Homer\Queue($db);
 $indexer = new Homer\Indexer($dbAsync);
 $limiter = new Homer\Locker();
 
-$loop->addPeriodicTimer(HOMER_TIMER, function ($timer) use ($client, $queue, $indexer, $limiter) {
+$loop->addPeriodicTimer(HOMER_TIMER, function ($timer) use ($client, $queue, $indexer, $limiter, $dbAsync) {
     while ($row = $queue->pop()) {
         if ($limiter->isAvailable($row['url'])) {
             $loader = new Homer\Loader($client, $queue, $indexer);
@@ -28,6 +28,8 @@ $loop->addPeriodicTimer(HOMER_TIMER, function ($timer) use ($client, $queue, $in
                 echo "Loading $row[url]\n";
                 break;
             }
+        }
+        while (pg_get_result($dbAsync)) {
         }
     }
 
