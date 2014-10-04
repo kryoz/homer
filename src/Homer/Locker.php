@@ -7,25 +7,25 @@
 
 namespace Homer;
 
-class Limiter 
+class Locker
 {
-    private $limits = array();
+    private $locks = array();
 
-    public function limit($thing)
+    public function lock($thing)
     {
-        $this->limits[$thing] = time();
+        $this->locks[$thing] = time();
     }
 
-    public function available($thing)
+    public function isAvailable($thing)
     {
-        return !isset($this->limits[$thing]);
+        return !isset($this->locks[$thing]);
     }
 
     public function release($max)
     {
-        while($time = reset($this->limits)) {
+        while($time = reset($this->locks)) {
             if(time() - $time > $max) {
-                unset($this->limits[key($this->limits)]);
+                unset($this->locks[key($this->locks)]);
             } else {
                 break;
             }

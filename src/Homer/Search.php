@@ -7,7 +7,6 @@
 
 namespace Homer;
 
-use Psr\Log\InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
 
 class Search
@@ -25,30 +24,40 @@ class Search
     public function index($url, Crawler $html)
     {
         $title = $html->filter('title');
-        if (count($title)) {
-            $title = $title->text();
-        } else {
+        if (!count($title)) {
             return;
         }
 
+        $title = $title->text();
+
         $body = $html->filter('body');
-        if (count($body)) {
-            $body = $body->text();
-        } else {
-            $body = '';
+        $body = count($body) ? $body->text() : '';
+        $body = strip_tags($body);
+        if (!$body) {
+            return;
         }
 
-        $query = $this->db->prepare('INSERT OR REPLACE INTO indexes (url, title, body) VALUES (?, ?, ?)');
+        $query = $this->db->prepare('INSERT INTO indexes (url, title, body) VALUES (?, ?, ?)');
         $query->execute([$url, $title, $body]);
     }
 
-    public function search($text, $limit)
+    public function search($text, $start, $limit)
     {
-        $query = $this->db->prepare('SELECT * FROM indexes WHERE indexes MATCH :text LIMIT :limit');
+        $query = $this->db->prepare("SELECT * FROM indexes WHERE tsv @@ plainto_tsquery(:text) LIMIT :limit OFFSET :start");
         $query->bindValue(':text', $text);
+        $query->bindValue(':start', $start);
         $query->bindValue(':limit', $limit);
         $query->execute();
 
         return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function getCount($text)
+    {
+        $query = $this->db->prepare("SELECT count(*) FROM indexes WHERE tsv @@ plainto_tsquery(:text)");
+        $query->bindValue(':text', $text);
+        $query->execute();
+        $result = $query->fetchAll(\PDO::FETCH_COLUMN, 0);
+        return !empty($result) ? $result[0] : 0;
     }
 }

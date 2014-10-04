@@ -1,0 +1,24 @@
+<style>
+    ul {
+        list-style: none;
+    }
+    li {
+        display: inline-block;
+    }
+</style>
+<ul>
+    {% for number, position in pages %}
+        {% if position == 'first' %}
+            <li><a href="/index.php?search={{ search }}&page=">&laquo;</a></li>
+        {% elseif position == 'less' or position == 'more' %}
+            <li>...</li>
+        {% elseif position == 'previous' or position == 'next' %}
+            <li><a href="/index.php?search={{ search }}&page={{ number }}">{{ number }}</a></li>
+        {% elseif position == 'current' %}
+            <li>{{ number }}</li>
+        {% elseif position == 'last' %}
+            <li><a href="/index.php?search={{ search }}&page={{ number }}">&raquo;</a></li>
+        {% endif %}
+    {% endfor %}
+</ul>
+<hr />

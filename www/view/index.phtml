@@ -37,9 +37,11 @@
                     <h4>
                         <a href="<?= $row['url'] ?>" target="_blank"><?= $row['title'] ?></a>
                     </h4>
+                    <p><?=$row['body']?></p>
                 </li>
             <?php endforeach; ?>
         </ol>
+        <?=$app['twig']->render('pagination.twig', array('pages' => $pages, 'search' => $search, 'current' => $pagination->currentPage()))?>
     <?php else: ?>
         <div class="well well-small">
             <h4>Nothing found.</h4>

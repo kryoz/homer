@@ -49,7 +49,7 @@ class Queue
 
     public function push($url, $deep)
     {
-        $query = $this->db->prepare('INSERT OR IGNORE INTO queue (url, deep) VALUES (:url, :deep)');
+        $query = $this->db->prepare('INSERT INTO queue (url, deep) VALUES (:url, :deep)');
         $query->bindValue(':url', $url);
         $query->bindValue(':deep', $deep);
         $query->execute();

@@ -78,7 +78,7 @@ class Loader
         $this->deep = $deep;
 
         $this->request = $this->client->request('GET', $url);
-        $this->request->on('response', array($this, 'onResponse'));
+        $this->request->on('response', [$this, 'onResponse']);
         $this->request->end();
 
         return true;
@@ -87,7 +87,7 @@ class Loader
     public function onResponse(Response $response)
     {
         $this->response = $response;
-        BufferedSink::createPromise($response)->then(array($this, 'onLoad'));
+        BufferedSink::createPromise($response)->then([$this, 'onLoad']);
     }
 
     public function onLoad($body)

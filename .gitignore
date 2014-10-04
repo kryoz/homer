@@ -1,5 +1,5 @@
 /vendor/
 /open/
 config.php
-composer.lock
+composer.phar
 .idea/
