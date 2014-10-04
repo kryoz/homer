@@ -22,15 +22,10 @@ $app['queue'] = $app->share(function () use ($app) {
     return new Homer\Queue($app['db']);
 });
 
-$app['search'] = $app->share(function () use ($app) {
-    return new Homer\Search($app['db']);
-});
-
 $app->get('/', function () use ($app) {
     $search = $app['request']->get('search', false);
     $page = $app['request']->get('page', 1);
-    /** @var Homer\Search $searcher */
-    $searcher = $app['search'];
+    $searcher = new Homer\Search($app['db']);
     $count = $searcher->getCount($search);
     /** @var \Kilte\Pagination\Pagination $pagination */
     $pagination = $app['pagination']($count, $page);
