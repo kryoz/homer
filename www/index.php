@@ -29,29 +29,18 @@ $app->get('/', function () use ($app) {
     $count = $searcher->getCount($search);
     /** @var \Kilte\Pagination\Pagination $pagination */
     $pagination = $app['pagination']($count, $page);
-    $pages      = $pagination->build();
 
     $result = $searcher->search($search, $pagination->offset(), $pagination->limit());
 
-    $highlighter = function($body, $word) {
-        $wrapLength = 100;
-        $pos = mb_strpos(mb_strtolower($body), mb_strtolower($word));
-        $len = mb_strlen($word);
-        $body = '...'.mb_substr($body, $pos - $wrapLength, 2*$wrapLength+$len).'...';
-        return preg_replace('~('.$word.')~uis', '<b>$1</b>', $body);
-    };
-
-    $words = explode(' ', $search);
-
     foreach ($result as &$row) {
         $descr = '';
-
-        foreach ($words as $word) {
-            $descr .= $highlighter($row['body'], $word);
+        foreach (explode(' ', $search) as $word) {
+            $descr .= $searcher->highlight($row['body'], $word);
         }
         $row['body'] = $descr;
     }
 
+    $pages = $pagination->build();
     ob_start();
     include 'view/index.phtml';
     return ob_get_clean();

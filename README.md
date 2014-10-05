@@ -1,14 +1,14 @@
 Homer
 =====
-This is a simple internet search engine. It is composed from two parts:
+This is a simple internet search engine.
 * Front End - Silex application with interface based on Bootstrap.
-* Demon - internet spider built on React PHP.
+* Daemon - internet spider built on React PHP.
 
 The main differences between original Homer
 * PostgreSQL only (should work fine on v9.0+), but utilizes async queries (PHP 5.6+) and advanced full-text search
 * Additional stats
 * Complete results viewer
-* Slightly faster crawler (be careful to avoid DoS, see HOMER_TIMER_FAST param) 
+* Slightly faster and more clever crawler (be careful to avoid DoS, see HOMER_TIMER_FAST param) 
 
 
 

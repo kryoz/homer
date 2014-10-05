@@ -39,4 +39,18 @@ class Search
         $result = $query->fetchAll(\PDO::FETCH_COLUMN, 0);
         return !empty($result) ? $result[0] : 0;
     }
+
+    public function highlight($body, $word)
+    {
+        $wrapLength = 100;
+        $normalizedBody = mb_strtolower($body);
+        $word = mb_strtolower($word);
+        while (($pos = mb_strpos($normalizedBody, $word)) === false) {
+            $len = mb_strlen($word);
+            $word = mb_substr($word, 0, $len-1);
+        }
+
+        $body = '...' . mb_substr($body, $pos - $wrapLength, 2 * $wrapLength + $len) . '...';
+        return preg_replace('~(' . $word . ')~uis', '<b>$1</b>', $body);
+    }
 }

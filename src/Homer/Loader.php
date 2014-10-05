@@ -174,7 +174,12 @@ class Loader
                         . $href;
                 }
 
-                if (HOMER_KEEP_HOST && $base['host'] !== parse_url($url, PHP_URL_HOST)) {
+                $segments = explode('.', parse_url($url, PHP_URL_HOST));
+                $domainPart1 = array_pop($segments);
+                $domainPart2 = array_pop($segments);
+                $urlhost = $domainPart2.'.'.$domainPart1;
+
+                if (HOMER_KEEP_HOST && mb_strpos($base['host'], $urlhost) === false) {
                     return;
                 }
 
