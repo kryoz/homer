@@ -63,7 +63,9 @@ class Queue
 
     public function pushMemory($url, $deep)
     {
-        ConnectionCounter::incQueue();
+        if (!isset($this->memory[$url])) {
+            ConnectionCounter::incQueue();
+        }
         $this->memory[$url] = $deep;
     }
 }

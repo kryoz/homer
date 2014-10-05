@@ -154,10 +154,23 @@ class Loader
                         . $base['host']
                         . $href;
                 } else {
+                    $path = '/';
+                    if (0 === mb_strpos($href, '.')) {
+                        $href = mb_substr($href, 1);
+                    }
+
+                    if ($baseHref) {
+                        $path = $baseHref;
+                    } elseif (isset($base['path'])) {
+                        $path = $base['path'];
+                        $segments = explode('/', rtrim($path, '/'));
+                        $path = end($segments);
+                    }
+
                     $url = $base['scheme']
                         . '://'
                         . $base['host']
-                        . ($baseHref ?: (isset($base['path']) ? $base['path'] : '/'))
+                        . $path
                         . $href;
                 }
 

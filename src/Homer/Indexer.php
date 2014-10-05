@@ -23,7 +23,7 @@ class Indexer
 
         $title = $title->text();
 
-        $this->filterHTML($html, ['script']);
+        $this->filterHTML($html, ['script', 'style']);
 
         $body = $html->filter('body');
         $body = count($body) ? $body->text() : '';
