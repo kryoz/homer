@@ -1,7 +1,7 @@
 <?php include 'header.phtml'; ?>
 
     <style>
-        #holder {
+        .holder > div {
             margin: 0 auto;
             width: 640px;
             height: 240px;
@@ -13,30 +13,35 @@
 
     <h1>Statistic</h1>
 
-    <div id="holder"></div>
+    <div class="holder">
+        <div id="holder1"></div>
+        <div id="holder2"></div>
+        <div id="holder3"></div>
+    </div>
+
 
     <script>
-        function draw(data) {
-            var r = Raphael("holder");
-            var style = { font: "12px sans-serif" };
+        $(function () {
+            function draw(holder, text, data, color) {
+                var r = Raphael(holder);
+                var style = { font: "12px sans-serif" };
+                r.text(250, 10, text).attr(style);
 
-            var x = [];
-            var y = [];
-            for (var i = 0; i < data.length; i++) {
-                x[i] = i;
-                y[i] = parseFloat(data[i]);
+                var x = [];
+                var y = [];
+                for (var i = 0; i < data.length; i++) {
+                    x[i] = i;
+                    y[i] = parseFloat(data[i]);
+                }
+                r.linechart(20, 20, 500, 200, x, [y], { shade: true, axis: "0 0 0 1"});
             }
 
-            r.text(250, 10, "PHP Memory Usage (in megabytes)").attr(style);
-
-            r.linechart(20, 20, 500, 200, x, [y], { shade: true, axis: "0 0 0 1"});
-        }
-
-        $(function () {
             $.get('http://<?= HOMER_HTTP_HOST ?>:<?= HOMER_HTTP_PORT ?>', function (data) {
-                draw(data.split(','));
+                draw('holder1', "PHP Memory Usage (in megabytes)", data.memory);
+                draw('holder2', 'Connections', data.connections);
+                draw('holder3', 'Queue', data.queue);
             });
-        }, 1000);
+        });
     </script>
 
 

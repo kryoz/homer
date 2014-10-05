@@ -26,14 +26,6 @@ class Queue
 
     public function pop()
     {
-        if (!empty($this->memory)) {
-            $deep = end($this->memory);
-            $url = key($this->memory);
-            unset($this->memory[$url]);
-
-            return ['url' => $url, 'deep' => $deep];
-        }
-
         $result = $this->db->query("SELECT * FROM queue ORDER BY id ASC LIMIT 1");
         $row = $result ? $result->fetch(\PDO::FETCH_ASSOC) : false;
 
@@ -55,8 +47,23 @@ class Queue
         $query->execute();
     }
 
+    public function popMemory()
+    {
+        if (!empty($this->memory)) {
+            $deep = end($this->memory);
+            $url = key($this->memory);
+            unset($this->memory[$url]);
+            ConnectionCounter::decQueue();
+
+            return ['url' => $url, 'deep' => $deep];
+        }
+
+        return false;
+    }
+
     public function pushMemory($url, $deep)
     {
+        ConnectionCounter::incQueue();
         $this->memory[$url] = $deep;
     }
 }

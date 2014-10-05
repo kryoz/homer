@@ -1,5 +1,7 @@
 <?php
 
+use Homer\ConnectionCounter;
+
 require_once __DIR__ . '/config.php';
 
 $loop = React\EventLoop\Factory::create();
@@ -9,31 +11,38 @@ $dnsResolver = $dnsResolverFactory->createCached(HOMER_RESOLVER_ADDRESS, $loop);
 
 $factory = new React\HttpClient\Factory();
 $client = $factory->create($loop, $dnsResolver);
-$dbAsync = pg_connect('host=localhost port=5432 dbname='.HOMER_DB.' user='.HOMER_DBUSER.' password='.HOMER_DBPASS);
+
 $db = new PDO(DB_SCHEME.'dbname='.HOMER_DB.';host=localhost', HOMER_DBUSER, HOMER_DBPASS, [
     PDO::ATTR_PERSISTENT => true,
     1002 => "SET NAMES utf8",
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
 ]);
 $queue = new Homer\Queue($db);
-$indexer = new Homer\Indexer($dbAsync);
-$limiter = new Homer\Locker();
+$locker = new Homer\Locker();
 
-$loop->addPeriodicTimer(HOMER_TIMER, function ($timer) use ($client, $queue, $indexer, $limiter, $dbAsync) {
+$dbAsync = pg_pconnect('host=localhost port=5432 dbname='.HOMER_DB.' user='.HOMER_DBUSER.' password='.HOMER_DBPASS, PGSQL_CONNECT_ASYNC);
+$indexer = new Homer\Indexer($dbAsync);
+
+$loop->addPeriodicTimer(HOMER_TIMER, function ($timer) use ($queue) {
     while ($row = $queue->pop()) {
-        if ($limiter->isAvailable($row['url'])) {
+        $queue->pushMemory($row['url'], HOMER_DEEP);
+        echo "Received task at $row[url]\n";
+    }
+});
+
+$loop->addPeriodicTimer(HOMER_TIMER_FAST, function ($timer) use ($client, $queue, $indexer, $locker, $dbAsync) {
+    while ($row = $queue->popMemory()) {
+        if ($locker->isAvailable($row['url'])) {
             $loader = new Homer\Loader($client, $queue, $indexer);
             if ($loader->load($row['url'], $row['deep'])) {
-                $limiter->lock($row['url']);
+                $locker->lock($row['url']);
                 echo "Loading $row[url]\n";
                 break;
             }
         }
-        while (pg_get_result($dbAsync)) {
-        }
     }
 
-    $limiter->release(HOMER_LIMITER_TIME);
+    $locker->release(HOMER_LIMITER_TIME);
 });
 
 if (HOMER_STAT) {
@@ -43,9 +52,11 @@ if (HOMER_STAT) {
 
     $loop->addPeriodicTimer(HOMER_TIMER, function ($timer) use ($stat) {
         $stat->add('memory', memory_get_usage(true) / (1024 * 1024));
+        $stat->add('connections', ConnectionCounter::getCount());
+        $stat->add('queue', ConnectionCounter::getQueueCount());
     });
 
-    $http->on('request', array($stat, 'app'));
+    $http->on('request', [$stat, 'app']);
     $socket->listen(HOMER_HTTP_PORT);
 }
 

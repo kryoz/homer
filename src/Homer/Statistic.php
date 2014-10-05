@@ -20,11 +20,15 @@ class Statistic
     {
 
         $response->writeHead(200, [
-            'Content-Type' => 'text/plain',
+            'Content-Type' => 'application/json',
             'Access-Control-Allow-Origin' => '*',
         ]);
-        $body = implode(',', $this->stat['memory']);
-        $response->end($body);
+
+        $response->end(json_encode([
+            'memory' => $this->stat['memory'],
+            'connections' => $this->stat['connections'],
+            'queue' => $this->stat['queue'],
+        ]));
     }
 
     public function add($name, $value)

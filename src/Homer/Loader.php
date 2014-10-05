@@ -74,9 +74,20 @@ class Loader
             return false;
         }
 
+        $staticRes = 'jpe?g|gif|png|ico|zip|tgz|gz|rar|bz2|dic|xls|exe|pdf|ppt|txt|tar|mid|midi|wav|bmp|rtf|js|swf|flv|mp3|ttf|woff';
+        if (preg_match('~\.(?:'.$staticRes.')(?:\??.*)$~uis', $url)) {
+            return false;
+        }
+
+        if (preg_match('~(?:javascript|mailto):~uis', $url)) {
+            return false;
+        }
+
+
         $this->url = $url;
         $this->deep = $deep;
 
+        ConnectionCounter::incConnection();
         $this->request = $this->client->request('GET', $url,
             ['User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.2.12) Gecko/20101026 Firefox/3.6.12']
         );
@@ -94,6 +105,7 @@ class Loader
 
     public function onLoad($body)
     {
+        ConnectionCounter::decConnection();
         $this->done = true;
         $headers = $this->response->getHeaders();
 
@@ -114,7 +126,15 @@ class Loader
             $base = parse_url($this->url);
 
             $links = $html->filter('a');
-            $links->each(function (Crawler $link) use ($base) {
+            $baseHref = $html->filter('base');
+
+            if (count($baseHref)) {
+                $baseHref = $baseHref->attr('href');
+            } else {
+                $baseHref = null;
+            }
+
+            $links->each(function (Crawler $link) use ($base, $baseHref) {
                 $href = explode('#', $link->attr('href'))[0];
                 $href = trim($href);
 
@@ -128,7 +148,7 @@ class Loader
 
                 if (preg_match('/^https?:\/\//i', $href)) {
                     $url = $href;
-                } else if (0 === strpos($href, '/')) {
+                } elseif (0 === mb_strpos($href, '/')) {
                     $url = $base['scheme']
                         . '://'
                         . $base['host']
@@ -137,7 +157,7 @@ class Loader
                     $url = $base['scheme']
                         . '://'
                         . $base['host']
-                        . (isset($base['path']) ? $base['path'] : '/')
+                        . ($baseHref ?: (isset($base['path']) ? $base['path'] : '/'))
                         . $href;
                 }
 
