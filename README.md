@@ -1,4 +1,4 @@
-Homer
+pgHomer
 =====
 This is a simple internet search engine.
 * Front End - Silex application with interface based on Bootstrap.

@@ -18,7 +18,6 @@ class Statistic
 
     public function app(Request $request, Response $response)
     {
-
         $response->writeHead(200, [
             'Content-Type' => 'application/json',
             'Access-Control-Allow-Origin' => '*',
