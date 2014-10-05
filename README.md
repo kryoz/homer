@@ -4,9 +4,13 @@ This is a simple internet search engine. It is composed from two parts:
 * Front End - Silex application with interface based on Bootstrap.
 * Demon - internet spider built on React PHP.
 
-For databases and search using SQLite full text (fts3).
+The main differences between original Homer
+* PostgreSQL only (should work fine on v9.0+), but utilizes async queries (PHP 5.6+) and advanced full-text search
+* Additional stats
+* Complete results viewer
+* Slightly faster crawler (be careful to avoid DoS, see HOMER_TIMER_FAST param) 
 
-![screen shot](http://f.cl.ly/items/031E2j2j2T1P2C0R041h/screen.png)
+
 
 Install
 -------
@@ -37,9 +41,9 @@ Homer have built in PHP memory usage statistic.
 
 Configuration
 -------------
-* HOMER_DNS - DNS string for SQLite database.
-* HOMER_RESOLVER_ADDRESS - IP address for dns resolver (default: 8.8.8.8);
-* HOMER_TIMER - Demon tick timer in seconds.
+* HOMER_RESOLVER_ADDRESS - IP address for dns resolver (default set to Yandex: 77.88.8.8);
+* HOMER_TIMER - tick timer in seconds to poll index tasks.
+* HOMER_TIMER_FAST - tick timer to poll url queue. The lower - the faster spider but may cause DoS the site
 * HOMER_DEEP - How deep demon will be following by hyperlinks.
 * HOMER_KEEP_HOST - Keep deep search only if host equals with parent page.
 * HOMER_LIMITER_TIME - How much time do not reindex already indexed pages.
