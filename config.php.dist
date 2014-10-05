@@ -1,33 +1,24 @@
 <?php
-use Homer\BaseException;
 
-define('HOMER_DNS', 'pgsql:dbname=homer;host=localhost');
+define('DB_SCHEME', 'pgsql:');
+define('HOMER_DB', 'homer');
 define('HOMER_DBUSER', 'homer');
 define('HOMER_DBPASS', '123');
-define('HOMER_RESOLVER_ADDRESS', '8.8.8.8');
-define('HOMER_TIMER', 0.1);
+define('HOMER_RESOLVER_ADDRESS', '77.88.8.8');
+define('HOMER_TIMER', 1);
+define('HOMER_TIMER_FAST', 0.01);
 define('HOMER_DEEP', 3);
 define('HOMER_KEEP_HOST', true);
 define('HOMER_LIMITER_TIME', 60 * 60);
 define('HOMER_STAT', true);
 define('HOMER_HTTP_HOST', 'localhost');
 define('HOMER_HTTP_PORT', 1337);
-
 define('ROOT', __DIR__);
 
 $DS = DIRECTORY_SEPARATOR;
 
 if (!isset($loader)) {
     $loader = require_once ROOT . $DS . 'vendor' . $DS . 'autoload.php';
-}
-
-if (isset($setupErrorHandler)) {
-    set_error_handler(
-        function ($code, $string, $errfile, $errline) {
-            throw new BaseException($string, $code);
-        }
-        , E_ALL | E_STRICT
-    );
 }
 
 error_reporting(E_ALL | E_STRICT);
