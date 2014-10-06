@@ -36,8 +36,8 @@ php demon.php
 
 Statistic
 ---------
-Homer have built in PHP memory usage statistic.
-![PHP Memory Usage](http://f.cl.ly/items/1v262P2C2A02393F3x3r/%D0%A1%D0%BD%D0%B8%D0%BC%D0%BE%D0%BA%20%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202013-07-06%20%D0%B2%2014.38.26.png)
+Homer have built-in usage statistic and logging via websockets.
+![Stats](http://i.imgur.com/eDSoa9A.png)
 
 Configuration
 -------------
