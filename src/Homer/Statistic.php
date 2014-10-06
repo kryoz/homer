@@ -7,39 +7,52 @@
 
 namespace Homer;
 
-use React\Http\Request;
-use React\Http\Response;
-
 class Statistic
 {
-    private $stat = [];
+    /**
+     * @var \SplFixedArray
+     */
+    private $memory;
+    /**
+     * @var \SplFixedArray
+     */
+    private $connections;
+    /**
+     * @var \SplFixedArray
+     */
+    private $queue;
+    
+    private $max = 500;
 
-    private $max = 1000;
-
-    public function app(Request $request, Response $response)
+    function __construct()
     {
-        $response->writeHead(200, [
-            'Content-Type' => 'application/json',
-            'Access-Control-Allow-Origin' => '*',
-        ]);
+        $this->memory = new \SplFixedArray($this->max);
+        $this->connections = new \SplFixedArray($this->max);
+        $this->queue = new \SplFixedArray($this->max);
+    }
 
-        $response->end(json_encode([
-            'memory' => $this->stat['memory'],
-            'connections' => $this->stat['connections'],
-            'queue' => $this->stat['queue'],
-        ]));
+
+    public function getStats()
+    {
+        return [
+            'memory' => $this->memory->toArray(),
+            'connections' => $this->connections->toArray(),
+            'queue' => $this->queue->toArray(),
+        ];
     }
 
     public function add($name, $value)
     {
-        if (!isset($this->stat[$name])) {
-            $this->stat[$name] = [];
+        /** @var \SplFixedArray $stat */
+        $stat = $this->{$name};
+        $key = $stat->key();
+        $stat[$key] = $value;
+
+
+        if ($stat->count() > $this->max) {
+            unset($stat[0]);
         }
 
-        $this->stat[$name][] = $value;
-
-        if (count($this->stat[$name]) > $this->max) {
-            array_shift($this->stat[$name]);
-        }
+        $stat->next();
     }
 }

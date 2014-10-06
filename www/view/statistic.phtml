@@ -6,6 +6,14 @@
             width: 640px;
             height: 240px;
         }
+
+        #console {
+            background: black;
+            color: white;
+            font-family: monospace;
+            font-size: 10px;
+            overflow: auto;
+        }
     </style>
     <script src="<?= $app['request']->getBasePath() ?>/js/raphael.js"></script>
     <script src="<?= $app['request']->getBasePath() ?>/js/g.raphael.js"></script>
@@ -14,6 +22,7 @@
     <h1>Statistic</h1>
 
     <div class="holder">
+        <div id="console"></div>
         <div id="holder1"></div>
         <div id="holder2"></div>
         <div id="holder3"></div>
@@ -22,8 +31,14 @@
 
     <script>
         $(function () {
-            function draw(holder, text, data, color) {
-                var r = Raphael(holder);
+            var rg = {};
+
+            function draw(holder, text, data) {
+                if (rg[holder]){
+                    rg[holder].clear();
+                }
+                rg[holder] = Raphael(holder);
+                var r = rg[holder];
                 var style = { font: "12px sans-serif" };
                 r.text(250, 10, text).attr(style);
 
@@ -31,16 +46,43 @@
                 var y = [];
                 for (var i = 0; i < data.length; i++) {
                     x[i] = i;
-                    y[i] = parseFloat(data[i]);
+                    var val = data[i] == null ? 0 : data[i];
+                    y[i] = parseFloat(val);
                 }
                 r.linechart(20, 20, 500, 200, x, [y], { shade: true, axis: "0 0 0 1"});
             }
 
-            $.get('http://<?= HOMER_HTTP_HOST ?>:<?= HOMER_HTTP_PORT ?>', function (data) {
-                draw('holder1', "PHP Memory Usage (in megabytes)", data.memory);
-                draw('holder2', 'Connections', data.connections);
-                draw('holder3', 'Queue', data.queue);
-            });
+            var connect = function() {
+                return new WebSocket('ws://<?= HOMER_HTTP_HOST ?>:<?= HOMER_HTTP_PORT ?>');
+            }
+            var ws = connect();
+
+            ws.onmessage = function(e) {
+                try {
+                    var data = JSON.parse(e.data);
+                } catch (c) {
+                    console.log(c);
+                    return;
+                }
+
+                if (data.stats) {
+                    draw('holder1', "PHP Memory Usage (in megabytes)", data.stats.memory);
+                    draw('holder2', 'Connections', data.stats.connections);
+                    draw('holder3', 'Queue', data.stats.queue);
+                }
+
+                if (data.console) {
+                    $('#console').prepend(data.console + '<br>');
+                }
+            }
+
+            ws.onerror = function(e) {
+                ws = connect();
+            }
+
+            ws.onclose = function(e) {
+                ws = connect();
+            }
         });
     </script>
 
